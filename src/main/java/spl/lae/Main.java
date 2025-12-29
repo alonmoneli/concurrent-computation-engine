@@ -8,8 +8,13 @@ public class Main {
       // TODO: main
 
       //Useful For Later
-      //int numberOfThreads = Integer.parseInt(args[0]);
-      //String inputFilePath = args[1];
-      //String outputFilePath = args[2];
+      int numberOfThreads;
+      String inputFilePath, outputFilePath;
+
+      if (args.length == 3) {      
+        numberOfThreads = Integer.parseInt(args[0]);
+        inputFilePath = args[1];
+        outputFilePath = args[2];
+      }
     }
 }

@@ -11,8 +11,13 @@ public class SharedMatrix {
 
     public SharedMatrix(double[][] matrix) {
         // TODO: construct matrix as row-major SharedVectors
-        if (matrix == null || matrix.length == 0) 
+        if (matrix == null) {
+            throw new IllegalArgumentException("input matrix is null");
+        }
+        if (matrix.length == 0) {
+            this.vectors = new SharedVector[0];
             return;
+        }
         this.vectors = new SharedVector[matrix.length];
         for(int i = 0; i < matrix.length; i++){
             SharedVector rowVector = new SharedVector(matrix[i], VectorOrientation.ROW_MAJOR);
@@ -22,8 +27,13 @@ public class SharedMatrix {
 
     public void loadRowMajor(double[][] matrix) {
         // TODO: replace internal data with new row-major matrix
-        if (matrix == null || matrix.length == 0) 
+        if (matrix == null) {
+            throw new IllegalArgumentException("input matrix is null");
+        }
+        if (matrix.length == 0) {
+            this.vectors = new SharedVector[0];
             return;
+        }
         this.vectors = new SharedVector[matrix.length];
         for(int i = 0; i < matrix.length; i++){
             SharedVector rowVector = new SharedVector(matrix[i], VectorOrientation.ROW_MAJOR);
@@ -34,15 +44,16 @@ public class SharedMatrix {
 
     public void loadColumnMajor(double[][] matrix) {
         // TODO: replace internal data with new column-major matrix
-        if (matrix == null || matrix.length == 0) 
+        if (matrix == null) {
+            throw new IllegalArgumentException("input matrix is null");
+        }
+        if (matrix.length == 0) {
+            this.vectors = new SharedVector[0];
             return;
-        this.vectors = new SharedVector[matrix[0].length];
-        for(int i = 0; i < matrix[0].length; i++){
-            double[] column = new double[matrix.length];
-            for(int j = 0; j < column.length; j++){
-                column[j] = matrix[j][i];
-            }
-            SharedVector columnVector = new SharedVector(column, VectorOrientation.COLUMN_MAJOR);
+        }
+        this.vectors = new SharedVector[matrix.length];
+        for(int i = 0; i < matrix.length; i++){
+            SharedVector columnVector = new SharedVector(matrix[i], VectorOrientation.COLUMN_MAJOR);
             this.vectors[i] = columnVector;
         }
         //Note for later to check - why didnt we lock here? - because vectors is volatile.
@@ -61,15 +72,18 @@ public class SharedMatrix {
             int vectorSize = vectors[0].length();
             if (orientation == VectorOrientation.ROW_MAJOR) {
                 double[][] result = new double[numVectors][vectorSize];
-                for (int i = 0; i < numVectors; i++) 
-                    result[i] = vectors[i].clone();
+                for (int row = 0; row < numVectors; row++) {
+                    for (int col = 0; col < vectorSize; col++) {
+                        result[row][col] = this.vectors[row].get(col);
+                    }
+                }
                 return result;
             } 
             else {
-                double[][] result = new double[vectorSize][numVectors];
-                for (int j = 0; j < numVectors; j++) {
-                    for (int i = 0; i < vectorSize; i++) { 
-                        result[i][j] = vectors[j].get(i);
+                double[][] result = new double[vectorSize][numVectors]; // rows=vectorSize, cols=numVectors
+                for (int col = 0; col < numVectors; col++) {
+                    for (int row = 0; row < vectorSize; row++) { 
+                        result[row][col] = vectors[col].get(row);
                     }
                 }
                 return result;
@@ -84,6 +98,9 @@ public class SharedMatrix {
 
     public SharedVector get(int index) {
         // TODO: return vector at index
+        if (index < 0 || index >= this.vectors.length) {
+            throw new IllegalArgumentException("index out of bounds");
+        }
         return this.vectors[index];
     }
 
@@ -95,7 +112,7 @@ public class SharedMatrix {
     public VectorOrientation getOrientation() {
         // TODO: return orientation
         if (this.vectors.length == 0)
-            return null;
+            return VectorOrientation.ROW_MAJOR;
         return this.vectors[0].getOrientation();
     
     }

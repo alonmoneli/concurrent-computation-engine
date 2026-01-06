@@ -61,31 +61,22 @@ public class TiredThread extends Thread implements Comparable<TiredThread> {
      */
     public void newTask(Runnable task) {
        // TODO
-       if (task != null) {
-        if (alive.get()) {
-            if (busy.compareAndSet(false, true)) {
-                if (!handoff.offer(task)) {
-                    busy.set(false);
-                    throw new IllegalStateException("Shnitzel");
+        if (task != null) {
+            if (alive.get()) {
+                if (busy.compareAndSet(false, true)) {
+                    if (!handoff.offer(task)) {
+                        busy.set(false);
+                        throw new IllegalStateException("null is not an option");
+                    }
+                }
+                else {
+                    throw new IllegalStateException("Busy");
                 }
             }
             else {
-                throw new IllegalStateException("Busy");
+                throw new IllegalStateException("Not Ready");
             }
         }
-        else {
-            throw new IllegalStateException("Dead");
-        }
-       }
-
-    //    if (this.busy.get() || !this.alive.get()) {
-    //     throw new IllegalStateException("worker is busy or not active");
-    //    }
-    //    if(!handoff.offer(task)){
-    //     throw new IllegalStateException("worker not ready");
-    //    }
-    //     this.busy.set(true);
-    //     this.timeIdle.addAndGet(System.nanoTime() -this.idleStartTime.get());
     }
 
     /**

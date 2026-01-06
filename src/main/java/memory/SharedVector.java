@@ -138,73 +138,70 @@ public class SharedVector {
             this.readUnlock();
             other.readUnlock();
         }
-        //Check later if deadlock is relevant. if not, ignore, else. repair.
+        //Check later if deadlock is relevant. if not, ignore, else. repair. - Not relevant here - everything runs smoothly.
     }
 
     
 
 
     public void vecMatMul(SharedMatrix matrix) {
-    if (matrix == null) {
-        throw new IllegalArgumentException("matrix is null");
-    }
-    if (this.orientation != VectorOrientation.ROW_MAJOR) {
-        throw new IllegalArgumentException("vector orientation is not row");
-    }
-
-    this.writeLock();
-    try {
-        int vLen = this.vector.length;
-        int matLen = matrix.length();
-
-        if (vLen == 0 && matLen == 0) {
-            return;
+        // TODO: compute row-vector × matrix
+        if (matrix == null) {
+            throw new IllegalArgumentException("matrix is null");
         }
-        if (matLen == 0) {
-            this.vector = new double[0];
-            return;
+        if (this.orientation != VectorOrientation.ROW_MAJOR) {
+            throw new IllegalArgumentException("vector orientation is not row");
         }
-
-        VectorOrientation matOrient = matrix.getOrientation();
-        double[] result;
-
-        if (matOrient == VectorOrientation.COLUMN_MAJOR) {
-            if (matrix.get(0).length() != vLen) {
-                throw new IllegalArgumentException("amount of rows in matrix and vector length are unequal");
+        this.writeLock();
+        try {
+            int vLen = this.vector.length;
+            int matLen = matrix.length();
+            if (vLen == 0 && matLen == 0) {
+                return;
             }
-
-            result = new double[matLen];
-            for (int i = 0; i < matLen; i++) {
-                result[i] = this.dot(matrix.get(i));
+            if (matLen == 0) {
+                this.vector = new double[0];
+                return;
             }
-        } else {
-            if (matLen != vLen) {
-                throw new IllegalArgumentException("amount of rows in matrix and vector length are unequal");
+            VectorOrientation matOrientation = matrix.getOrientation();
+            double[] result;
+            if (matOrientation == VectorOrientation.COLUMN_MAJOR) {
+                if (matrix.get(0).length() != vLen) {
+                    throw new IllegalArgumentException("amount of rows in matrix and vector length are unequal");
+                }
+                result = new double[matLen];
+                for (int i = 0; i < matLen; i++) {
+                    result[i] = this.dot(matrix.get(i));
+                }
             }
-
-            int width = matrix.get(0).length();
-            result = new double[width];
-
-            for (int i = 0; i < matLen; i++) {
-                double scalar = this.vector[i];
-                if (scalar != 0) {
-                    SharedVector row = matrix.get(i);
-                    row.readLock();
-                    try {
-                        for (int j = 0; j < width; j++) {
-                            result[j] += scalar * row.vector[j];
+            else {
+                if (matLen != vLen) {
+                    throw new IllegalArgumentException("amount of rows in matrix and vector length are unequal");
+                }
+                int width = matrix.get(0).length();
+                result = new double[width];
+                for (int i = 0; i < matLen; i++) {
+                    double scalar = this.vector[i];
+                    if (scalar != 0) {
+                        SharedVector row = matrix.get(i);
+                        row.readLock();
+                        try {
+                            for (int j = 0; j < width; j++) {
+                                result[j] += scalar * row.vector[j];
+                            }
                         }
-                    } finally {
-                        row.readUnlock();
+                        finally {
+                            row.readUnlock();
+
+                        }
                     }
                 }
             }
+            this.vector = result;
+            this.orientation = VectorOrientation.ROW_MAJOR;
+        } 
+        finally {
+            this.writeUnlock();
         }
-
-        this.vector = result;
-        this.orientation = VectorOrientation.ROW_MAJOR;
-    } finally {
-        this.writeUnlock();
     }
-}
 }

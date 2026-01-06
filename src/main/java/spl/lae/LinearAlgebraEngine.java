@@ -42,14 +42,13 @@ public class LinearAlgebraEngine {
         // TODO: create compute tasks & submit tasks to executor
         ComputationNodeType check = node.getNodeType();
         List<ComputationNode> children = node.getChildren();
-        validateArity(check, children);
+        validateAmountOfVars(check, children);
         switch (check) {
             case MULTIPLY:
                 double[][] left = children.get(0).getMatrix();
                 double[][] right = children.get(1).getMatrix();
                 validateMultiply(left, right);
                 leftMatrix.loadRowMajor(left);
-                // convert right operand (row-major) into column-major representation
                 double[][] rightAsColumns = transpose(right);
                 rightMatrix.loadColumnMajor(rightAsColumns);
                 executor.submitAll(createMultiplyTasks());
@@ -65,13 +64,11 @@ public class LinearAlgebraEngine {
                 node.resolve(leftMatrix.readRowMajor());
                 break;
             case NEGATE:
-                // only one operand allowed (validated above)
                 leftMatrix.loadRowMajor(children.get(0).getMatrix());
                 executor.submitAll(createNegateTasks());
                 node.resolve(leftMatrix.readRowMajor());
                 break;
             case TRANSPOSE:
-                // only one operand allowed (validated above)
                 leftMatrix.loadRowMajor(children.get(0).getMatrix());
                 executor.submitAll(createTransposeTasks());
                 node.resolve(leftMatrix.readRowMajor());
@@ -85,7 +82,7 @@ public class LinearAlgebraEngine {
         // TODO: return tasks that perform row-wise addition
         int matrixLength = leftMatrix.length();
         List<Runnable> addTasks = new java.util.LinkedList<>();
-        //check later if is okay to import linkedlist.
+        //check later if is okay to import linkedlist. - OKAY
         for (int i = 0; i < matrixLength; i++) {
             int rowNum = i;
             Runnable task = () -> {
@@ -156,27 +153,28 @@ public class LinearAlgebraEngine {
         int rows = mat.length;
         int cols = mat[0].length;
         double[][] res = new double[cols][rows];
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                res[c][r] = mat[r][c];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                res[j][i] = mat[i][j];
             }
         }
         return res;
     }
 
-    private void validateArity(ComputationNodeType type, List<ComputationNode> children) {
+    //Aid function - we added this.
+    private void validateAmountOfVars(ComputationNodeType type, List<ComputationNode> children) {
         int arity = children == null ? 0 : children.size();
         switch (type) {
             case NEGATE:
             case TRANSPOSE:
                 if (arity != 1) {
-                    throw new IllegalArgumentException("Illegal operation: wrong arity");
+                    throw new IllegalArgumentException("wrong amount of variables");
                 }
                 break;
             case ADD:
             case MULTIPLY:
                 if (arity < 2) {
-                    throw new IllegalArgumentException("Illegal operation: wrong arity");
+                    throw new IllegalArgumentException("wrong amount of variables");
                 }
                 break;
             default:
@@ -184,32 +182,34 @@ public class LinearAlgebraEngine {
         }
     }
 
+    //Aid function - we added this.
     private void validateAdd(double[][] left, double[][] right) {
         if (left == null || right == null) {
-            throw new IllegalArgumentException("Illegal operation: dimensions mismatch");
+            throw new IllegalArgumentException("dimensions mismatch");
         }
         if (left.length != right.length) {
-            throw new IllegalArgumentException("Illegal operation: dimensions mismatch");
+            throw new IllegalArgumentException("dimensions mismatch");
         }
         if (left.length == 0) {
             return;
         }
         if (left[0].length != right[0].length) {
-            throw new IllegalArgumentException("Illegal operation: dimensions mismatch");
+            throw new IllegalArgumentException("dimensions mismatch");
         }
     }
 
+    //Aid function - we added this.
     private void validateMultiply(double[][] left, double[][] right) {
         if (left == null || right == null) {
-            throw new IllegalArgumentException("Illegal operation: dimensions mismatch");
+            throw new IllegalArgumentException("dimensions mismatch");
         }
         if (left.length == 0 || right.length == 0) {
-            throw new IllegalArgumentException("Illegal operation: dimensions mismatch");
+            throw new IllegalArgumentException("dimensions mismatch");
         }
         int leftCols = left[0].length;
         int rightRows = right.length;
         if (leftCols != rightRows) {
-            throw new IllegalArgumentException("Illegal operation: dimensions mismatch");
+            throw new IllegalArgumentException("dimensions mismatch");
         }
     }
 }

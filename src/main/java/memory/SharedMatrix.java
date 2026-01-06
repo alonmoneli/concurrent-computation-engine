@@ -39,7 +39,7 @@ public class SharedMatrix {
             SharedVector rowVector = new SharedVector(matrix[i], VectorOrientation.ROW_MAJOR);
             this.vectors[i] = rowVector;
         }
-        //Note for later to check - why didnt we lock here? - because vectors is volatile.
+        //Note for later to check - why didnt we lock here? - Answer for self - because vectors is volatile.
     }
 
     public void loadColumnMajor(double[][] matrix) {
@@ -56,7 +56,7 @@ public class SharedMatrix {
             SharedVector columnVector = new SharedVector(matrix[i], VectorOrientation.COLUMN_MAJOR);
             this.vectors[i] = columnVector;
         }
-        //Note for later to check - why didnt we lock here? - because vectors is volatile.
+        //Note for later to check - why didnt we lock here? - because vectors is volatile, again...
 
     }
 
@@ -80,7 +80,7 @@ public class SharedMatrix {
                 return result;
             } 
             else {
-                double[][] result = new double[vectorSize][numVectors]; // rows=vectorSize, cols=numVectors
+                double[][] result = new double[vectorSize][numVectors];
                 for (int col = 0; col < numVectors; col++) {
                     for (int row = 0; row < vectorSize; row++) { 
                         result[row][col] = vectors[col].get(row);
@@ -92,8 +92,8 @@ public class SharedMatrix {
         finally {
             releaseAllVectorReadLocks(vectors);
         }
-        //I need to check if I really need to clone a vector or not.
-        // Can I add getData for quicker Implemenation?
+        //I need to check if I really need to clone a vector or not. - Changed in skeleton - no need.
+        // Can I add getData for quicker Implemenation? - Not needen eventually
     }
 
     public SharedVector get(int index) {

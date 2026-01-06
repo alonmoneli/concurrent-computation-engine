@@ -57,7 +57,6 @@ public class SharedMatrix {
             this.vectors[i] = columnVector;
         }
         //Note for later to check - why didnt we lock here? - because vectors is volatile, again...
-
     }
 
     public double[][] readRowMajor() {

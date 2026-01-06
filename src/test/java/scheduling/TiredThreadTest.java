@@ -2,44 +2,61 @@ package scheduling;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 public class TiredThreadTest {
 
-    @Test
-    public void testNewTaskRunsToCompletionAndShutsDown() throws Exception {
-        TiredThread thread = new TiredThread(7, 1.1);
-        CountDownLatch latch = new CountDownLatch(1);
-        thread.start();
-        thread.newTask(() -> latch.countDown());
-        assertTrue(latch.await(1, TimeUnit.SECONDS));
-        thread.shutdown();
-        thread.join(1000);
-        assertFalse(thread.isBusy());
+    private TiredThread executionUnit;
+
+    @AfterEach
+    public void tearDown() throws InterruptedException {
+        if (executionUnit != null) {
+            executionUnit.shutdown();
+            executionUnit.join(500);
+        }
     }
-    
+
     @Test
-    public void testNewTaskWhileBusyThrowsException() throws Exception {
-        TiredThread thread = new TiredThread(42, 0.9);
-        CountDownLatch latch = new CountDownLatch(1);
-        thread.start();
-        thread.newTask(() -> {
+    public void shouldExecuteTaskAndBecomeIdle() throws Exception {
+        executionUnit = new TiredThread(10, 1.0);
+        CountDownLatch completionSignal = new CountDownLatch(1);
+        
+        executionUnit.start();
+
+        Runnable simpleTask = completionSignal::countDown;
+        executionUnit.newTask(simpleTask);
+
+        boolean isFinished = completionSignal.await(500, TimeUnit.MILLISECONDS);
+        assertTrue(isFinished);
+        assertEquals(false, executionUnit.isBusy());
+    }
+
+    @Test
+    public void shouldRejectTaskWhenAlreadyRunning() throws Exception {
+        executionUnit = new TiredThread(5, 1.0);
+        CountDownLatch startSignal = new CountDownLatch(1);
+        executionUnit.start();
+
+        Runnable blockingTask = () -> {
             try {
-                latch.countDown();
-                Thread.sleep(200);
-            } catch (InterruptedException ignored) {
+                startSignal.countDown();
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
-        });
-        assertTrue(latch.await(1, TimeUnit.SECONDS));
-        assertThrows(IllegalStateException.class, () -> thread.newTask(() -> {}));
-        thread.shutdown();
-        thread.join(1000);
+        };
+
+        executionUnit.newTask(blockingTask);
+
+        boolean started = startSignal.await(500, TimeUnit.MILLISECONDS);
+        assertTrue(started);
+
+        Runnable dummyTask = () -> {};
+        assertThrows(IllegalStateException.class, () -> executionUnit.newTask(dummyTask));
     }
 }

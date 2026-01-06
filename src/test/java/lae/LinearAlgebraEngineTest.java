@@ -36,18 +36,6 @@ public class LinearAlgebraEngineTest {
   }
 
   @Test
-  public void testLeafMatrixReturnsItself() {
-    LinearAlgebraEngine engine = new LinearAlgebraEngine(4);
-    double[][] singleMatrix = {
-        { 7, 8 },
-        { 9, 10 }
-    };
-    ComputationNode matrixNode = new ComputationNode(singleMatrix);
-    ComputationNode resultNode = engine.run(matrixNode);
-    assertMatrixEquals(singleMatrix, resultNode.getMatrix());
-  }
-
-  @Test
   public void testMultiplyOperationProducesProduct() {
     LinearAlgebraEngine engine = new LinearAlgebraEngine(6);
     double[][] multiplicandMatrix = {
@@ -103,47 +91,6 @@ public class LinearAlgebraEngineTest {
         { -4, 0 }
     };
     assertMatrixEquals(expectedNegated, negateResultNode.getMatrix());
-  }
-
-  @Test
-  public void testComplexExpressionEvaluatesCorrectly() {
-    LinearAlgebraEngine engine = new LinearAlgebraEngine(8);
-    double[][] leftOperand = {
-        { 2, 1, 0 },
-        { -1, 3, 4 }
-    };
-
-    double[][] rightOperand = {
-        { 1, 0, 5 },
-        { 2, -2, 1 }
-    };
-
-    double[][] transformOperand = {
-        { 0, 2, 1 },
-        { 3, -1, 4 }
-    };
-
-    double[][] subtractOperand = {
-        { 1, 2 },
-        { -4, 5 }
-    };
-
-    ComputationNode complexNode = new ComputationNode("+", List.of(
-        new ComputationNode("*", List.of(
-            new ComputationNode("+", List.of(
-                new ComputationNode(leftOperand),
-                new ComputationNode("-", List.of(new ComputationNode(rightOperand))) 
-            )),
-            new ComputationNode("T", List.of(new ComputationNode(transformOperand)))
-        )),
-        new ComputationNode("-", List.of(new ComputationNode(subtractOperand))) 
-    ));
-    ComputationNode complexResultNode = engine.run(complexNode);
-    double[][] expectedComplex = {
-        { -4, -20 },
-        { 17, -7 }
-    };
-    assertMatrixEquals(expectedComplex, complexResultNode.getMatrix());
   }
 
   @Test

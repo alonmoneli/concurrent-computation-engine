@@ -14,23 +14,23 @@ import org.junit.jupiter.api.Test;
 public class TiredThreadTest {
 
     @Test
-    public void testNewTaskRuns() throws Exception {
-        TiredThread worker = new TiredThread(0, 1.0);
+    public void testNewTaskRunsToCompletionAndShutsDown() throws Exception {
+        TiredThread thread = new TiredThread(7, 1.1);
         CountDownLatch latch = new CountDownLatch(1);
-        worker.start();
-        worker.newTask(() -> latch.countDown());
+        thread.start();
+        thread.newTask(() -> latch.countDown());
         assertTrue(latch.await(1, TimeUnit.SECONDS));
-        worker.shutdown();
-        worker.join(1000);
-        assertFalse(worker.isBusy());
+        thread.shutdown();
+        thread.join(1000);
+        assertFalse(thread.isBusy());
     }
-
+    
     @Test
-    public void testNewTaskWhileBusyThrows() throws Exception {
-        TiredThread worker = new TiredThread(1, 1.0);
+    public void testNewTaskWhileBusyThrowsException() throws Exception {
+        TiredThread thread = new TiredThread(42, 0.9);
         CountDownLatch latch = new CountDownLatch(1);
-        worker.start();
-        worker.newTask(() -> {
+        thread.start();
+        thread.newTask(() -> {
             try {
                 latch.countDown();
                 Thread.sleep(200);
@@ -38,8 +38,8 @@ public class TiredThreadTest {
             }
         });
         assertTrue(latch.await(1, TimeUnit.SECONDS));
-        assertThrows(IllegalStateException.class, () -> worker.newTask(() -> {}));
-        worker.shutdown();
-        worker.join(1000);
+        assertThrows(IllegalStateException.class, () -> thread.newTask(() -> {}));
+        thread.shutdown();
+        thread.join(1000);
     }
 }

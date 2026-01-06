@@ -8,26 +8,26 @@ import org.junit.jupiter.api.Test;
 
 public class SharedMatrixTest {
 
-  double[][] dummyMat = { { 1, 2, 3 }, { 4, 5, 6 } };
+  double[][] primaryMatrix = { { 2, 4, 6 }, { 1, 3, 5 } };
 
   @Test
-  public void testEmptyMatrixConstructor() {
+  public void testEmptyMatrixHasZeroLength() {
     SharedMatrix mat = new SharedMatrix();
     assertEquals(mat.length(), 0);
     assertEquals(mat.getOrientation(), VectorOrientation.ROW_MAJOR);
   }
 
   @Test
-  public void testMatrixConstructor() {
-    SharedMatrix mat = new SharedMatrix(dummyMat);
-    assertEquals(mat.length(), 2);
-    assertEquals(mat.get(0).length(), 3);
-    assertEquals(mat.get(1).length(), 3);
-    assertMatrixEquals(dummyMat, mat.readRowMajor());
+  public void testMatrixConstructorLoadsRows() {
+    SharedMatrix matrix = new SharedMatrix(primaryMatrix);
+    assertEquals(matrix.length(), 2);
+    assertEquals(matrix.get(0).length(), 3);
+    assertEquals(matrix.get(1).length(), 3);
+    assertMatrixEquals(primaryMatrix, matrix.readRowMajor());
   }
 
   @Test
-  public void testMatrixConstructorExceptionNullInput() {
+  public void testConstructorRejectsNullInput() {
     Exception e = assertThrows(IllegalArgumentException.class, () -> {
       SharedMatrix m = new SharedMatrix(null);
     });
@@ -37,29 +37,29 @@ public class SharedMatrixTest {
   }
 
   @Test
-  public void testLoadRowMajor() {
-    SharedMatrix m = new SharedMatrix();
-    m.loadRowMajor(dummyMat);
-    assertEquals(m.length(), 2);
-    assertEquals(m.get(0).length(), 3);
-    assertEquals(m.get(1).length(), 3);
-    assertEquals(m.getOrientation(), VectorOrientation.ROW_MAJOR);
-    assertMatrixEquals(dummyMat, m.readRowMajor());
+  public void testLoadRowMajorStoresData() {
+    SharedMatrix matrix = new SharedMatrix();
+    matrix.loadRowMajor(primaryMatrix);
+    assertEquals(matrix.length(), 2);
+    assertEquals(matrix.get(0).length(), 3);
+    assertEquals(matrix.get(1).length(), 3);
+    assertEquals(matrix.getOrientation(), VectorOrientation.ROW_MAJOR);
+    assertMatrixEquals(primaryMatrix, matrix.readRowMajor());
   }
 
   @Test
-  public void testLoadRowMajorOverridingExistingInfo() {
-    SharedMatrix m = new SharedMatrix(new double[][] { { 1 } });
-    m.loadRowMajor(dummyMat);
-    assertEquals(m.length(), 2);
-    assertEquals(m.get(0).length(), 3);
-    assertEquals(m.get(1).length(), 3);
-    assertEquals(m.getOrientation(), VectorOrientation.ROW_MAJOR);
-    assertMatrixEquals(dummyMat, m.readRowMajor());
+  public void testLoadRowMajorReplacesOldData() {
+    SharedMatrix matrix = new SharedMatrix(new double[][] { { 1 } });
+    matrix.loadRowMajor(primaryMatrix);
+    assertEquals(matrix.length(), 2);
+    assertEquals(matrix.get(0).length(), 3);
+    assertEquals(matrix.get(1).length(), 3);
+    assertEquals(matrix.getOrientation(), VectorOrientation.ROW_MAJOR);
+    assertMatrixEquals(primaryMatrix, matrix.readRowMajor());
   }
 
   @Test
-  public void testLoadRowMajorExceptionNullInput() {
+  public void testLoadRowMajorRejectsNull() {
     Exception e = assertThrows(IllegalArgumentException.class, () -> {
       SharedMatrix m = new SharedMatrix();
       m.loadRowMajor(null);
@@ -70,41 +70,41 @@ public class SharedMatrixTest {
   }
 
   @Test
-  public void testLoadColumnMajor() {
-    SharedMatrix m = new SharedMatrix();
-    m.loadColumnMajor(dummyMat);
-    assertEquals(m.length(), 2);
-    assertEquals(m.get(0).length(), 3);
-    assertEquals(m.get(0).getOrientation(), VectorOrientation.COLUMN_MAJOR);
-    assertEquals(m.get(1).length(), 3);
-    assertEquals(m.get(1).getOrientation(), VectorOrientation.COLUMN_MAJOR);
+  public void testLoadColumnMajorStoresAsColumns() {
+    SharedMatrix matrix = new SharedMatrix();
+    matrix.loadColumnMajor(primaryMatrix);
+    assertEquals(matrix.length(), 2);
+    assertEquals(matrix.get(0).length(), 3);
+    assertEquals(matrix.get(0).getOrientation(), VectorOrientation.COLUMN_MAJOR);
+    assertEquals(matrix.get(1).length(), 3);
+    assertEquals(matrix.get(1).getOrientation(), VectorOrientation.COLUMN_MAJOR);
     double[][] expected = {
-        {1,4},
-        {2,5},
-        {3,6}
+        {2,1},
+        {4,3},
+        {6,5}
     };
-    assertMatrixEquals(expected, m.readRowMajor());
+    assertMatrixEquals(expected, matrix.readRowMajor());
   }
 
   @Test
-  public void testLoadColumnMajorOverridingExistingInfo() {
-    SharedMatrix m = new SharedMatrix(new double[][] { { 1 } });
-    m.loadColumnMajor(dummyMat);
-    assertEquals(m.length(), 2);
-    assertEquals(m.get(0).length(), 3);
-    assertEquals(m.get(0).getOrientation(), VectorOrientation.COLUMN_MAJOR);
-    assertEquals(m.get(1).length(), 3);
-    assertEquals(m.get(1).getOrientation(), VectorOrientation.COLUMN_MAJOR);
+  public void testLoadColumnMajorReplacesOldData() {
+    SharedMatrix matrix = new SharedMatrix(new double[][] { { 1 } });
+    matrix.loadColumnMajor(primaryMatrix);
+    assertEquals(matrix.length(), 2);
+    assertEquals(matrix.get(0).length(), 3);
+    assertEquals(matrix.get(0).getOrientation(), VectorOrientation.COLUMN_MAJOR);
+    assertEquals(matrix.get(1).length(), 3);
+    assertEquals(matrix.get(1).getOrientation(), VectorOrientation.COLUMN_MAJOR);
     double[][] expected = {
-        {1,4},
-        {2,5},
-        {3,6}
+        {2,1},
+        {4,3},
+        {6,5}
     };
-    assertMatrixEquals(expected, m.readRowMajor());
+    assertMatrixEquals(expected, matrix.readRowMajor());
   }
 
   @Test
-  public void testLoadColumnMajorExceptionNullInput() {
+  public void testLoadColumnMajorRejectsNull() {
     Exception e = assertThrows(IllegalArgumentException.class, () -> {
       SharedMatrix m = new SharedMatrix();
       m.loadColumnMajor(null);
@@ -115,45 +115,45 @@ public class SharedMatrixTest {
   }
 
   @Test
-  public void testReadRowMajorFromRowMajor() {
-    SharedMatrix m = new SharedMatrix();
-    m.loadRowMajor(dummyMat);
-    double[][] read = m.readRowMajor();
+  public void testReadRowMajorFromRowLayout() {
+    SharedMatrix matrix = new SharedMatrix();
+    matrix.loadRowMajor(primaryMatrix);
+    double[][] read = matrix.readRowMajor();
     assertEquals(read.length, 2);
     assertEquals(read[0].length, 3);
     assertEquals(read[1].length, 3);
-    assertMatrixEquals(dummyMat, read);
+    assertMatrixEquals(primaryMatrix, read);
   }
 
   @Test
-  public void testReadRowMajorFromColumnMajor() {
-    SharedMatrix m = new SharedMatrix();
-    m.loadColumnMajor(dummyMat);
-    double[][] read = m.readRowMajor();
+  public void testReadRowMajorFromColumnLayout() {
+    SharedMatrix matrix = new SharedMatrix();
+    matrix.loadColumnMajor(primaryMatrix);
+    double[][] read = matrix.readRowMajor();
     assertEquals(read.length, 3);
     assertEquals(read[0].length, 2);
     assertEquals(read[1].length, 2);
     assertEquals(read[2].length, 2);
     double[][] expected = {
-        {1,4},
-        {2,5},
-        {3,6}
+        {2,1},
+        {4,3},
+        {6,5}
     };
     assertMatrixEquals(expected, read);
   }
 
   @Test
   public void testReadRowMajorFromEmptyMatrix() {
-    SharedMatrix m = new SharedMatrix();
-    double[][] read = m.readRowMajor();
+    SharedMatrix matrix = new SharedMatrix();
+    double[][] read = matrix.readRowMajor();
     assertEquals(read.length, 0);
   }
 
   @Test
-  public void testGetExceptionNegativeIndex() {
-    SharedMatrix matrix = new SharedMatrix(dummyMat);
+  public void testGetRejectsNegativeIndex() {
+    SharedMatrix matrix = new SharedMatrix(primaryMatrix);
     Exception e = assertThrows(IllegalArgumentException.class, () -> {
-      SharedVector v = matrix.get(-1);
+      SharedVector ignored = matrix.get(-1);
     });
     String expectedMsg = "index out of bounds";
     String actualMsg = e.getMessage();
@@ -161,10 +161,10 @@ public class SharedMatrixTest {
   }
 
   @Test
-  public void testGetExceptionTooBigIndex() {
-    SharedMatrix matrix = new SharedMatrix(dummyMat);
+  public void testGetRejectsTooLargeIndex() {
+    SharedMatrix matrix = new SharedMatrix(primaryMatrix);
     Exception e = assertThrows(IllegalArgumentException.class, () -> {
-      SharedVector v = matrix.get(10);
+      SharedVector ignored = matrix.get(10);
     });
     String expectedMsg = "index out of bounds";
     String actualMsg = e.getMessage();
@@ -172,49 +172,49 @@ public class SharedMatrixTest {
   }
 
   @Test
-  public void testGetOrientationRow() {
-    SharedMatrix m = new SharedMatrix();
-    m.loadRowMajor(dummyMat);
-    assertEquals(m.getOrientation(), VectorOrientation.ROW_MAJOR);
+  public void testGetOrientationAfterRowLoad() {
+    SharedMatrix matrix = new SharedMatrix();
+    matrix.loadRowMajor(primaryMatrix);
+    assertEquals(matrix.getOrientation(), VectorOrientation.ROW_MAJOR);
   }
 
   @Test
-  public void testGetOrientationRowForEmptyMatrix() {
-    SharedMatrix m = new SharedMatrix();
-    assertEquals(m.getOrientation(), VectorOrientation.ROW_MAJOR);
+  public void testGetOrientationForEmptyMatrix() {
+    SharedMatrix matrix = new SharedMatrix();
+    assertEquals(matrix.getOrientation(), VectorOrientation.ROW_MAJOR);
   }
 
   @Test
-  public void testGetOrientationColumn() {
-    SharedMatrix m = new SharedMatrix();
-    m.loadColumnMajor(dummyMat);
-    assertEquals(m.getOrientation(), VectorOrientation.COLUMN_MAJOR);
+  public void testGetOrientationAfterColumnLoad() {
+    SharedMatrix matrix = new SharedMatrix();
+    matrix.loadColumnMajor(primaryMatrix);
+    assertEquals(matrix.getOrientation(), VectorOrientation.COLUMN_MAJOR);
   }
 
   @Test
-  public void testLoadRowMajorEmptyMatrix() {
-    SharedMatrix m = new SharedMatrix();
-    m.loadRowMajor(new double[0][0]);
-    assertEquals(0, m.length());
-    assertEquals(VectorOrientation.ROW_MAJOR, m.getOrientation());
-    assertEquals(0, m.readRowMajor().length);
+  public void testLoadRowMajorWithEmptyArray() {
+    SharedMatrix matrix = new SharedMatrix();
+    matrix.loadRowMajor(new double[0][0]);
+    assertEquals(0, matrix.length());
+    assertEquals(VectorOrientation.ROW_MAJOR, matrix.getOrientation());
+    assertEquals(0, matrix.readRowMajor().length);
   }
 
   @Test
   public void testLoadColumnThenRowResetsOrientation() {
-    SharedMatrix m = new SharedMatrix();
-    m.loadColumnMajor(dummyMat);
-    m.loadRowMajor(dummyMat);
-    assertEquals(VectorOrientation.ROW_MAJOR, m.getOrientation());
-    assertMatrixEquals(dummyMat, m.readRowMajor());
+    SharedMatrix matrix = new SharedMatrix();
+    matrix.loadColumnMajor(primaryMatrix);
+    matrix.loadRowMajor(primaryMatrix);
+    assertEquals(VectorOrientation.ROW_MAJOR, matrix.getOrientation());
+    assertMatrixEquals(primaryMatrix, matrix.readRowMajor());
   }
 
   @Test
   public void testReadRowMajorReturnsCopy() {
-    SharedMatrix m = new SharedMatrix(dummyMat);
-    double[][] read = m.readRowMajor();
+    SharedMatrix matrix = new SharedMatrix(primaryMatrix);
+    double[][] read = matrix.readRowMajor();
     read[0][0] = 999;
-    assertEquals(1, m.get(0).get(0)); // internal data unchanged
+    assertEquals(2, matrix.get(0).get(0)); // internal data unchanged
   }
 
   private void assertMatrixEquals(double[][] expected, double[][] actual) {

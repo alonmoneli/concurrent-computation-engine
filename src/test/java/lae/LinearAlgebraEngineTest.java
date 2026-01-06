@@ -12,176 +12,152 @@ import parser.ComputationNode;
 import spl.lae.LinearAlgebraEngine;
 
 public class LinearAlgebraEngineTest {
-  @Test
-  public void testCreateAddTasks() {
-    LinearAlgebraEngine lae = new LinearAlgebraEngine(10);
-    double[][] mat1 = {
-        { 1, 2 },
-        { 3, 4 }
-    };
-    double[][] mat2 = {
-        { 5, 6 },
-        { 7, 8 }
-    };
 
-    ComputationNode addNode = new ComputationNode("+", List.of(
-        new ComputationNode(mat1),
-        new ComputationNode(mat2)));
-    ComputationNode resNode = lae.run(addNode);
-    double[][] compRes = resNode.getMatrix();
-    double[][] expectedRes = {
-        { 6, 8 },
-        { 10, 12 }
+  @Test
+  public void testAddOperationProducesSum() {
+    LinearAlgebraEngine engine = new LinearAlgebraEngine(6);
+    double[][] addLeft = {
+        { 2, -1 },
+        { 0, 5 }
     };
-    assertMatrixEquals(expectedRes, compRes);
+    double[][] addRight = {
+        { 17, 4 },
+        { 7, -2 }
+    };
+    ComputationNode addNode = new ComputationNode("+", List.of(
+        new ComputationNode(addLeft),
+        new ComputationNode(addRight)));
+    ComputationNode addResultNode = engine.run(addNode);
+    double[][] expectedAdd = {
+        { 19, 3 },
+        { 7, 3 }
+    };
+    assertMatrixEquals(expectedAdd, addResultNode.getMatrix());
   }
 
   @Test
-  public void testCreateMultiplyTasks() {
-    LinearAlgebraEngine lae = new LinearAlgebraEngine(10);
-    double[][] mat1 = {
-        { 1, 2 },
-        { 3, 4 }
+  public void testLeafMatrixReturnsItself() {
+    LinearAlgebraEngine engine = new LinearAlgebraEngine(4);
+    double[][] singleMatrix = {
+        { 7, 8 },
+        { 9, 10 }
     };
-    double[][] mat2 = {
-        { 2, 0 },
-        { 1, 2 }
+    ComputationNode matrixNode = new ComputationNode(singleMatrix);
+    ComputationNode resultNode = engine.run(matrixNode);
+    assertMatrixEquals(singleMatrix, resultNode.getMatrix());
+  }
+
+  @Test
+  public void testMultiplyOperationProducesProduct() {
+    LinearAlgebraEngine engine = new LinearAlgebraEngine(6);
+    double[][] multiplicandMatrix = {
+        { 1, 3 },
+        { -2, 4 }
+    };
+    double[][] multiplierMatrix = {
+        { 0, 5 },
+        { 2, 1 }
     };
 
     ComputationNode multiplyNode = new ComputationNode("*", List.of(
-        new ComputationNode(mat1),
-        new ComputationNode(mat2)));
-    ComputationNode resNode = lae.run(multiplyNode);
-    double[][] compRes = resNode.getMatrix();
-    double[][] expectedRes = {
-        { 4, 4 },
-        { 10, 8 }
+        new ComputationNode(multiplicandMatrix),
+        new ComputationNode(multiplierMatrix)));
+    ComputationNode multiplyResultNode = engine.run(multiplyNode);
+    double[][] expectedMultiply = {
+        { 6, 8 },
+        { 8, -6 }
     };
-    assertMatrixEquals(expectedRes, compRes);
+    assertMatrixEquals(expectedMultiply, multiplyResultNode.getMatrix());
   }
 
   @Test
-  public void testCreateTransposeTasks() {
-    LinearAlgebraEngine lae = new LinearAlgebraEngine(10);
-    double[][] mat = {
+  public void testTransposeOperationProducesTranspose() {
+    LinearAlgebraEngine engine = new LinearAlgebraEngine(6);
+    double[][] matrixToTranspose = {
+        { 9, 8, 7 },
+        { 0, -1, 2 }
+    };
+
+    ComputationNode transposeNode = new ComputationNode("T", List.of(new ComputationNode(matrixToTranspose)));
+    ComputationNode transposeResultNode = engine.run(transposeNode);
+    double[][] expectedTranspose = {
+        { 9, 0 },
+        { 8, -1 },
+        { 7, 2 }
+    };
+    assertMatrixEquals(expectedTranspose, transposeResultNode.getMatrix());
+  }
+
+  @Test
+  public void testNegateOperationFlipsSigns() {
+    LinearAlgebraEngine engine = new LinearAlgebraEngine(6);
+    double[][] matrixToNegate = {
+        { 0, -3 },
+        { 4, 0 }
+    };
+
+    ComputationNode negateNode = new ComputationNode("-", List.of(new ComputationNode(matrixToNegate)));
+    ComputationNode negateResultNode = engine.run(negateNode);
+    double[][] expectedNegated = {
+        { 0, 3 },
+        { -4, 0 }
+    };
+    assertMatrixEquals(expectedNegated, negateResultNode.getMatrix());
+  }
+
+  @Test
+  public void testComplexExpressionEvaluatesCorrectly() {
+    LinearAlgebraEngine engine = new LinearAlgebraEngine(8);
+    double[][] leftOperand = {
+        { 2, 1, 0 },
+        { -1, 3, 4 }
+    };
+
+    double[][] rightOperand = {
+        { 1, 0, 5 },
+        { 2, -2, 1 }
+    };
+
+    double[][] transformOperand = {
+        { 0, 2, 1 },
+        { 3, -1, 4 }
+    };
+
+    double[][] subtractOperand = {
         { 1, 2 },
-        { 3, 4 }
-    };
-
-    ComputationNode transposeNode = new ComputationNode("T", List.of(new ComputationNode(mat)));
-    ComputationNode resNode = lae.run(transposeNode);
-    double[][] compRes = resNode.getMatrix();
-    double[][] expectedRes = {
-        { 1, 3 },
-        { 2, 4 }
-    };
-    assertMatrixEquals(expectedRes, compRes);
-  }
-
-  @Test
-  public void testCreateNegateTasks() {
-    LinearAlgebraEngine lae = new LinearAlgebraEngine(10);
-    double[][] mat = {
-        { 3, -5 },
-        { 8, 17 }
-    };
-
-    ComputationNode negateNode = new ComputationNode("-", List.of(new ComputationNode(mat)));
-    ComputationNode resNode = lae.run(negateNode);
-    double[][] compRes = resNode.getMatrix();
-    double[][] expectedRes = {
-        { -3, 5 },
-        { -8, -17 }
-    };
-    assertMatrixEquals(expectedRes, compRes);
-  }
-
-  @Test
-  public void testRunComplexOperation() {
-    LinearAlgebraEngine lae = new LinearAlgebraEngine(10);
-    double[][] mat1 = {
-        { 1, 2, 3 },
-        { 4, 5, 6 }
-    };
-
-    double[][] mat2 = {
-        { 6, 5, 4 },
-        { 3, 2, 1 }
-    };
-
-    double[][] mat3 = {
-        { 1, 0, 2 },
-        { -1, 3, 1 }
-    };
-
-    double[][] mat4 = {
-        { 2, -1 },
-        { 0, 4 }
+        { -4, 5 }
     };
 
     ComputationNode complexNode = new ComputationNode("+", List.of(
         new ComputationNode("*", List.of(
             new ComputationNode("+", List.of(
-                new ComputationNode(mat1),
-                new ComputationNode("-", List.of(new ComputationNode(mat2))) 
+                new ComputationNode(leftOperand),
+                new ComputationNode("-", List.of(new ComputationNode(rightOperand))) 
             )),
-            new ComputationNode("T", List.of(new ComputationNode(mat3)))
+            new ComputationNode("T", List.of(new ComputationNode(transformOperand)))
         )),
-        new ComputationNode("-", List.of(new ComputationNode(mat4))) 
+        new ComputationNode("-", List.of(new ComputationNode(subtractOperand))) 
     ));
-    ComputationNode resNode = lae.run(complexNode);
-    double[][] compRes = resNode.getMatrix();
-    double[][] expectedRes = {
-        { -9, -4 },
-        { 11, 9 }
+    ComputationNode complexResultNode = engine.run(complexNode);
+    double[][] expectedComplex = {
+        { -4, -20 },
+        { 17, -7 }
     };
-    assertMatrixEquals(expectedRes, compRes);
+    assertMatrixEquals(expectedComplex, complexResultNode.getMatrix());
   }
 
   @Test
-  public void testSingleMatrixPassThrough() {
-    LinearAlgebraEngine lae = new LinearAlgebraEngine(4);
-    double[][] mat = {
-        { 14, 13 },
-        { 12, 11 }
-    };
-    ComputationNode node = new ComputationNode(mat);
-    ComputationNode resNode = lae.run(node);
-    assertMatrixEquals(mat, resNode.getMatrix());
+  public void testAddRejectsMismatchedShapes() {
+    LinearAlgebraEngine engine = new LinearAlgebraEngine(2);
+    double[][] shortMatrix = { { 1, 2 } };
+    double[][] tallMatrix = { { 3, 4 }, { 5, 6 } };
+    ComputationNode badAdd = new ComputationNode("+", List.of(
+        new ComputationNode(shortMatrix),
+        new ComputationNode(tallMatrix)));
+    assertThrows(IllegalArgumentException.class, () -> engine.run(badAdd));
   }
 
   @Test
-  public void testAddDimensionMismatchThrows() {
-    LinearAlgebraEngine lae = new LinearAlgebraEngine(2);
-    double[][] mat1 = { { 1, 2 } };
-    double[][] mat2 = { { 3, 4 }, { 5, 6 } };
-    ComputationNode addNode = new ComputationNode("+", List.of(
-        new ComputationNode(mat1),
-        new ComputationNode(mat2)));
-    assertThrows(IllegalArgumentException.class, () -> lae.run(addNode));
-  }
-
-  @Test
-  public void testMultiplyDimensionMismatchThrows() {
-    LinearAlgebraEngine lae = new LinearAlgebraEngine(2);
-    double[][] mat1 = { { 1, 2, 3 }, { 4, 5, 6 } }; // 2x3
-    double[][] mat2 = { { 1, 2 }, { 3, 4 } };       // 2x2 -> cols of left (3) != rows of right (2)
-    ComputationNode mulNode = new ComputationNode("*", List.of(
-        new ComputationNode(mat1),
-        new ComputationNode(mat2)));
-    assertThrows(IllegalArgumentException.class, () -> lae.run(mulNode));
-  }
-
-  @Test
-  public void testWrongArityUnaryThrows() {
-    LinearAlgebraEngine lae = new LinearAlgebraEngine(2);
-    double[][] mat = { { 1, 2 }, { 3, 4 } };
-    ComputationNode badNegate = new ComputationNode("-", List.of(
-        new ComputationNode(mat),
-        new ComputationNode(mat)));
-    assertThrows(IllegalArgumentException.class, () -> lae.run(badNegate));
-  }
-
   private void assertMatrixEquals(double[][] expected, double[][] actual) {
     assertEquals(expected.length, actual.length);
     for (int i = 0; i < expected.length; i++) {
@@ -191,4 +167,26 @@ public class LinearAlgebraEngineTest {
       }
     }
   }
+
+  @Test
+  public void testMultiplyRejectsMismatchedShapes() {
+    LinearAlgebraEngine engine = new LinearAlgebraEngine(2);
+    double[][] matLeft = { { 1, 2, 3 }, { 4, 5, 6 } }; // 2x3
+    double[][] matRight = { { 1, 2 }, { 3, 4 } };       // 2x2 -> cols of left (3) != rows of right (2)
+    ComputationNode badMultiply = new ComputationNode("*", List.of(
+        new ComputationNode(matLeft),
+        new ComputationNode(matRight)));
+    assertThrows(IllegalArgumentException.class, () -> engine.run(badMultiply));
+  }
+
+  @Test
+  public void testUnaryOpRejectsExtraOperands() {
+    LinearAlgebraEngine engine = new LinearAlgebraEngine(2);
+    double[][] matrixForNegate = { { 1, 2 }, { 3, 4 } };
+    ComputationNode badNegate = new ComputationNode("-", List.of(
+        new ComputationNode(matrixForNegate),
+        new ComputationNode(matrixForNegate)));
+    assertThrows(IllegalArgumentException.class, () -> engine.run(badNegate));
+  }
+
 }

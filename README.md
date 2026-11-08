@@ -107,4 +107,4 @@ The repository includes JUnit tests for:
 
 ## Background
 
-Developed by Alon Moneli and Tomer Yaron as part of the Systems Programming course at Ben-Gurion University.
+Developed by Alon Moneli and Tomer Yaron.

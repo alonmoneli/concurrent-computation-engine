@@ -1,5 +1,17 @@
+# Build output
 target/
-.idea/
-.vscode/
 *.class
 *.jar
+dependency-reduced-pom.xml
+
+# IDE settings
+.idea/
+.vscode/
+*.iml
+
+# Generated results
+result.json
+
+# OS files
+.DS_Store
+Thumbs.db
